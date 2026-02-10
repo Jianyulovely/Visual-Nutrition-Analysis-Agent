@@ -1,0 +1,46 @@
+<view class="container">
+  <view class="upload-section">
+    <view class="upload-area" bindtap="chooseImage">
+      <image wx:if="{{imagePath}}" src="{{imagePath}}" class="preview-image" mode="aspectFit"></image>
+      <view wx:else class="upload-placeholder">
+        <text class="upload-icon">📷</text>
+        <text class="upload-text">点击上传图片</text>
+        <text class="upload-hint">支持相册和拍照</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="input-section">
+    <view class="input-label">用户名</view>
+    <input 
+      class="input-field" 
+      placeholder="请输入用户名" 
+      value="{{username}}"
+      bindinput="onUsernameInput"
+    />
+  </view>
+
+  <view class="action-section">
+    <button 
+      class="btn-analyze" 
+      bindtap="analyzeImage"
+      disabled="{{!imagePath || analyzing}}"
+    >
+      {{analyzing ? '分析中...' : '开始分析'}}
+    </button>
+  </view>
+
+  <view wx:if="{{result}}" class="result-section">
+    <view class="result-header">
+      <text class="result-title">分析结果</text>
+    </view>
+    <view class="result-content">
+      <text class="result-text">{{result}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{analyzing}}" class="loading-section">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">正在分析中，请稍候...</text>
+  </view>
+</view>

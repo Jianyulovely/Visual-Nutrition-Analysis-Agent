@@ -1,0 +1,39 @@
+<view class="container">
+  <view class="header">
+    <view class="welcome">
+      <text class="welcome-text">欢迎使用</text>
+      <text class="app-name">视觉分析助手</text>
+    </view>
+    <text class="subtitle">智能识别，精准分析</text>
+  </view>
+
+  <view class="feature-card">
+    <view class="feature-item" bindtap="goToAnalyze">
+      <view class="feature-icon">📷</view>
+      <view class="feature-title">图像分析</view>
+      <view class="feature-desc">上传图片，智能识别分析</view>
+    </view>
+  </view>
+
+  <view class="info-card">
+    <view class="info-title">功能介绍</view>
+    <view class="info-list">
+      <view class="info-item">
+        <text class="info-dot">•</text>
+        <text class="info-text">支持多种图像识别场景</text>
+      </view>
+      <view class="info-item">
+        <text class="info-dot">•</text>
+        <text class="info-text">快速准确的分析结果</text>
+      </view>
+      <view class="info-item">
+        <text class="info-dot">•</text>
+        <text class="info-text">简洁易用的操作界面</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="action-card">
+    <button class="btn-primary" bindtap="goToAnalyze">开始分析</button>
+  </view>
+</view>
