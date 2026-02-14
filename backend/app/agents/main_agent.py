@@ -69,4 +69,5 @@ class VisionAnalysisAgent:
 
 if __name__ == "__main__":
     agent = VisionAnalysisAgent()
-    print(agent.run(username="yjy", image_path="/data3/yjy/envs/agent/agent_codes/Nutrition_agent/food_pic/饺子.jpg"))  
+    agent_response = agent.run(username="yjy", image_path="/data3/yjy/envs/agent/agent_codes/Nutrition_agent/food_pic/饺子.jpg") 
+    print(agent_response.get("analysis_results", {}).get("final_response"))

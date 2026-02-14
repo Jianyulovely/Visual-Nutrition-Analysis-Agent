@@ -1,2 +1,4 @@
 /.env
 backend/app/__pycache__
+/food_pic
+*.jpg

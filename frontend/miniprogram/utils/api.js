@@ -32,6 +32,7 @@ function request(url, data = {}, method = 'GET', header = {}) {
   })
 }
 
+// 将图片文件发送到FastAPI后端
 function uploadImage(filePath, formData = {}) {
   return new Promise((resolve, reject) => {
     wx.uploadFile({
@@ -62,6 +63,7 @@ function uploadImage(filePath, formData = {}) {
   })
 }
 
+// 封装调用摄像头或者相册逻辑
 function chooseImage(count = 1) {
   return new Promise((resolve, reject) => {
     wx.chooseImage({

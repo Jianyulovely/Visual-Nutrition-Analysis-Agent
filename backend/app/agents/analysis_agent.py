@@ -177,4 +177,4 @@ if __name__ == "__main__":
     
     username = "yjy"
     agent = AnalysisAgent()
-    agent.analyze(username, vision_report)        
+    print(agent.analyze(username, vision_report).get("final_response"))       

@@ -44,5 +44,5 @@ class VisionAgent:
 
 if __name__ == "__main__":
     vision_agent = VisionAgent()
-    response = vision_agent.analyze_image("Nutrition_agent/food_pic/西红柿炒鸡蛋.jpg")
+    response = vision_agent.analyze_image("food_pic/西红柿炒鸡蛋.jpg")
     print(response)

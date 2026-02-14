@@ -23,7 +23,9 @@ async def analyze_nutrition(username: str = Form(...), image: UploadFile = File(
     # 2. 调用你的 VisionAnalysisAgent
     try:
         # thread_id 可用于多轮对话状态保持，此处先给一个随机值
-        result = agent.run(username=username, image_path=file_path, thread_id="user_session_001")
+        # 这里run返回是一个AgentState
+        full_state = agent.run(username=username, image_path=file_path, thread_id="user_session_001")
+        result = full_state.get("analysis_results", {}).get("final_response")
         return {"status": "success", "data": result}
     except Exception as e:
         return {"status": "error", "message": str(e)}
