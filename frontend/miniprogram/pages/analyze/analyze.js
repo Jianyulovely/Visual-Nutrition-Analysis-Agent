@@ -6,7 +6,10 @@ Page({
     username: '',
     analyzing: false,
     result: '',
-    parsedResult: null
+    parsedResult: null,
+    pieChartData: null,
+    selectedCategory: '',
+    selectedCategoryDetails: ''
   },
 
   onLoad() {
@@ -19,6 +22,10 @@ Page({
     this.setData({
       analyzing: false
     })
+    
+    if (this.data.pieChartData) {
+      this.drawPieChart()
+    }
   },
 
   chooseImage() {
@@ -26,7 +33,8 @@ Page({
       this.setData({
         imagePath: res[0],
         result: '',
-        parsedResult: null
+        parsedResult: null,
+        pieChartData: null
       })
     }).catch(err => {
       console.error('选择图片失败', err)
@@ -37,6 +45,39 @@ Page({
     this.setData({
       username: e.detail.value
     })
+  },
+
+  calculatePieData(pagoda) {
+    if (!pagoda) return null
+
+    const l1 = pagoda.L1?.total_value || 0
+    const l2 = pagoda.L2?.total_value || 0
+    const l3 = pagoda.L3?.total_value || 0
+    const l4 = pagoda.L4?.total_value || 0
+
+    const total = l1 + l2 + l3 + l4
+
+    if (total === 0) return null
+
+    const data = [
+      { name: '谷薯类', value: l1, color: '#FFD700', angle: 0 },
+      { name: '蔬果类', value: l2, color: '#52C41A', angle: 0 },
+      { name: '肉蛋类', value: l3, color: '#FF8C00', angle: 0 },
+      { name: '奶豆坚果', value: l4, color: '#1890FF', angle: 0 }
+    ].filter(item => item.value > 0)
+
+    let currentAngle = 0
+    data.forEach(item => {
+      item.angle = (item.value / total) * 360
+      item.startAngle = currentAngle
+      item.endAngle = currentAngle + item.angle
+      currentAngle += item.angle
+    })
+
+    return {
+      data: data,
+      total: total
+    }
   },
 
   formatResult(data) {
@@ -67,7 +108,7 @@ Page({
         result += `  蔬果类：${pagoda.L2.total_value || 0}g\n`
       }
       if (pagoda.L3) {
-        result += `  动物性食物：${pagoda.L3.total_value || 0}g\n`
+        result += `  肉蛋类：${pagoda.L3.total_value || 0}g\n`
       }
       if (pagoda.L4) {
         result += `  奶豆坚果类：${pagoda.L4.total_value || 0}g\n`
@@ -84,6 +125,160 @@ Page({
     }
     
     return result || JSON.stringify(data, null, 2)
+  },
+
+  getEmojiForCategory(category) {
+    const emojiMap = {
+      '谷薯类': '🌾',
+      '蔬果类': '🥬',
+      '肉蛋类': '🍗',
+      '奶豆坚果': '🥜'
+    }
+    return emojiMap[category] || '🍽️'
+  },
+
+  drawPieChart() {
+    const { pieChartData } = this.data
+    if (!pieChartData || !pieChartData.data || pieChartData.data.length === 0) return
+
+    const query = wx.createSelectorQuery()
+    query.select('#pieCanvas').fields({
+      node: true,
+      size: true
+    }).exec((res) => {
+      if (!res || !res[0]) return
+
+      const canvas = res[0].node
+      const ctx = canvas.getContext('2d')
+      const dpr = wx.getSystemInfoSync().pixelRatio
+      canvas.width = res[0].width * dpr
+      canvas.height = res[0].height * dpr
+      ctx.scale(dpr, dpr)
+
+      const width = res[0].width
+      const height = res[0].height
+      const centerX = width / 2
+      const centerY = height / 2
+      const outerRadius = Math.min(width, height) / 2 - 20
+      const innerRadius = outerRadius * 0.6
+
+      let currentAngle = -Math.PI / 2
+
+      pieChartData.data.forEach((item) => {
+        const sliceAngle = (item.angle / 360) * 2 * Math.PI
+
+        ctx.beginPath()
+        ctx.moveTo(centerX, centerY)
+        ctx.arc(centerX, centerY, outerRadius, currentAngle, currentAngle + sliceAngle)
+        ctx.arc(centerX, centerY, innerRadius, currentAngle + sliceAngle, currentAngle, true)
+        ctx.closePath()
+        
+        const gradient = ctx.createLinearGradient(centerX - outerRadius, centerY - outerRadius, centerX + outerRadius, centerY + outerRadius)
+        gradient.addColorStop(0, item.color)
+        gradient.addColorStop(1, this.lightenColor(item.color, 0.2))
+        ctx.fillStyle = gradient
+        ctx.fill()
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)'
+        ctx.shadowBlur = 8
+        ctx.shadowOffsetX = 2
+        ctx.shadowOffsetY = 2
+
+        currentAngle += sliceAngle
+      })
+    })
+  },
+
+  lightenColor(color, amount) {
+    const hex = color.replace('#', '')
+    const r = parseInt(hex.substring(0, 2), 16)
+    const g = parseInt(hex.substring(2, 4), 16)
+    const b = parseInt(hex.substring(4, 6), 16)
+
+    const newR = Math.min(255, Math.round(r + (255 - r) * amount))
+    const newG = Math.min(255, Math.round(g + (255 - g) * amount))
+    const newB = Math.min(255, Math.round(b + (255 - b) * amount))
+
+    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`
+  },
+
+  onPieChartClick(e) {
+    const { pieChartData } = this.data
+    if (!pieChartData || !pieChartData.data || pieChartData.data.length === 0) return
+
+    const query = wx.createSelectorQuery()
+    query.select('#pieCanvas').fields({
+      node: true,
+      size: true,
+      rect: true
+    }).exec((res) => {
+      if (!res || !res[0]) return
+
+      const canvas = res[0].node
+      const rect = res[0].rect
+      const centerX = rect.width / 2
+      const centerY = rect.height / 2
+      const outerRadius = Math.min(rect.width, rect.height) / 2 - 20
+      const innerRadius = outerRadius * 0.6
+
+      const clickX = e.detail.x - rect.left
+      const clickY = e.detail.y - rect.top
+      const distance = Math.sqrt(Math.pow(clickX - centerX, 2) + Math.pow(clickY - centerY, 2))
+
+      if (distance >= innerRadius && distance <= outerRadius) {
+        let angle = Math.atan2(clickY - centerY, clickX - centerX)
+        if (angle < -Math.PI / 2) angle += 2 * Math.PI
+
+        let currentAngle = -Math.PI / 2
+        for (let i = 0; i < pieChartData.data.length; i++) {
+          const item = pieChartData.data[i]
+          const sliceAngle = (item.angle / 360) * 2 * Math.PI
+          if (angle >= currentAngle && angle < currentAngle + sliceAngle) {
+            this.showCategoryDetails(item.name)
+            break
+          }
+          currentAngle += sliceAngle
+        }
+      }
+    })
+  },
+
+  onLegendItemClick(e) {
+    const { index } = e.currentTarget.dataset
+    const { pieChartData } = this.data
+    if (!pieChartData || !pieChartData.data || pieChartData.data.length === 0) return
+
+    const item = pieChartData.data[index]
+    this.showCategoryDetails(item.name)
+  },
+
+  showCategoryDetails(category) {
+    const { parsedResult } = this.data
+    if (!parsedResult || !parsedResult.main_ingredients) return
+
+    let details = ''
+    const ingredients = parsedResult.main_ingredients
+
+    switch (category) {
+      case '谷薯类':
+        details = '内含米饭、面条、土豆等'
+        break
+      case '蔬果类':
+        details = '内含' + ingredients.filter(ing => ['蔬菜', '水果', '青菜', '白菜', '萝卜', '番茄', '黄瓜'].some(keyword => ing.includes(keyword))).join('、') + '等'
+        break
+      case '肉蛋类':
+        details = '内含' + ingredients.filter(ing => ['肉', '蛋', '鸡', '鸭', '鱼', '虾', '牛', '羊', '猪'].some(keyword => ing.includes(keyword))).join('、') + '等'
+        break
+      case '奶豆坚果':
+        details = '内含' + ingredients.filter(ing => ['奶', '豆', '坚果', '花生', '杏仁', '核桃'].some(keyword => ing.includes(keyword))).join('、') + '等'
+        break
+      default:
+        details = '暂无详细信息'
+    }
+
+    this.setData({
+      selectedCategory: category,
+      selectedCategoryDetails: details
+    })
   },
 
   analyzeImage() {
@@ -112,38 +307,50 @@ Page({
     uploadImage(imagePath, { username }).then(res => {
       let resultText = ''
       let parsedResult = null
+      let pieChartData = null
       
       try {
         console.log('后端返回数据:', res)
         
         let dataToParse = res
         
-        if (typeof dataToParse === 'object' && dataToParse.data) {
+        if (typeof dataToParse === 'object' && dataToParse.data !== undefined) {
           dataToParse = dataToParse.data
         }
         
-        if (typeof dataToParse === 'string') {
+        if (dataToParse === null || dataToParse === undefined) {
+          resultText = '分析失败：未返回分析结果'
+        } else if (typeof dataToParse === 'string') {
           try {
             parsedResult = JSON.parse(dataToParse)
             resultText = this.formatResult(parsedResult)
+            pieChartData = this.calculatePieData(parsedResult?.pagoda_nutrition_vector)
           } catch (parseError) {
             resultText = dataToParse
           }
         } else if (typeof dataToParse === 'object') {
           parsedResult = dataToParse
           resultText = this.formatResult(parsedResult)
+          pieChartData = this.calculatePieData(parsedResult?.pagoda_nutrition_vector)
         } else {
           resultText = JSON.stringify(res, null, 2)
         }
       } catch (e) {
         console.error('解析结果失败', e)
-        resultText = typeof res.data === 'string' ? res.data : JSON.stringify(res.data, null, 2)
+        resultText = '解析失败：' + JSON.stringify(e)
       }
       
       this.setData({
         analyzing: false,
         result: resultText,
-        parsedResult: parsedResult
+        parsedResult: parsedResult,
+        pieChartData: pieChartData,
+        selectedCategory: '',
+        selectedCategoryDetails: ''
+      }, () => {
+        if (pieChartData) {
+          this.drawPieChart()
+        }
       })
       wx.showToast({
         title: '分析完成',

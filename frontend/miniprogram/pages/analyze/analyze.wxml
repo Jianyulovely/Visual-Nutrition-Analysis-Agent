@@ -30,12 +30,89 @@
     </button>
   </view>
 
-  <view wx:if="{{result}}" class="result-section">
-    <view class="result-header">
-      <text class="result-title">分析结果</text>
+  <view wx:if="{{!result && !analyzing}}" class="empty-state">
+    <text class="empty-icon">🍽️</text>
+    <text class="empty-text">等待投喂图片</text>
+    <text class="empty-hint">上传一张美食图片开始分析</text>
+  </view>
+
+  <view wx:if="{{parsedResult}}" class="analysis-card">
+    <view class="dish-info">
+      <text wx:if="{{parsedResult.dish_name}}" class="dish-name">{{parsedResult.dish_name}}</text>
+      <text wx:if="{{parsedResult.description}}" class="dish-description">{{parsedResult.description}}</text>
     </view>
-    <view class="result-content">
-      <text class="result-text">{{result}}</text>
+
+    <view wx:if="{{parsedResult.feature_tags && parsedResult.feature_tags.length > 0}}" class="tags-section">
+      <view wx:for="{{parsedResult.feature_tags}}" wx:key="index" class="tag">
+        {{item}}
+      </view>
+    </view>
+
+    <view wx:if="{{pieChartData}}" class="pie-chart-section">
+      <view class="pie-chart-wrapper">
+        <view class="pie-chart">
+          <canvas 
+            type="2d" 
+            id="pieCanvas" 
+            class="pie-canvas"
+            bindtap="onPieChartClick"
+          ></canvas>
+          <view class="pie-center">
+            <text class="pie-center-text">{{pieChartData.total}}g</text>
+            <text class="pie-center-subtext">总量</text>
+          </view>
+        </view>
+        <view class="pie-legend">
+          <view wx:for="{{pieChartData.data}}" wx:key="name" class="legend-item" bindtap="onLegendItemClick" data-index="{{index}}">
+            <view class="legend-color" style="background-color: {{item.color}};"></view>
+            <text class="legend-emoji">{{getEmojiForCategory(item.name)}}</text>
+            <text class="legend-text">{{item.name}}</text>
+            <text class="legend-value">{{item.value}}g</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="nutrition-section">
+      <view class="nutrition-header">
+        <text class="nutrition-title">营养详情</text>
+      </view>
+      <view class="nutrition-content">
+        <view wx:if="{{parsedResult.pagoda_nutrition_vector}}">
+          <view class="nutrition-item">
+            <text class="nutrition-label">谷薯类</text>
+            <text class="nutrition-value">{{parsedResult.pagoda_nutrition_vector.L1 && parsedResult.pagoda_nutrition_vector.L1.total_value ? parsedResult.pagoda_nutrition_vector.L1.total_value : 0}}g</text>
+          </view>
+          <view class="nutrition-item">
+            <text class="nutrition-label">蔬果类</text>
+            <text class="nutrition-value">{{parsedResult.pagoda_nutrition_vector.L2 && parsedResult.pagoda_nutrition_vector.L2.total_value ? parsedResult.pagoda_nutrition_vector.L2.total_value : 0}}g</text>
+          </view>
+          <view class="nutrition-item">
+            <text class="nutrition-label">肉蛋类</text>
+            <text class="nutrition-value">{{parsedResult.pagoda_nutrition_vector.L3 && parsedResult.pagoda_nutrition_vector.L3.total_value ? parsedResult.pagoda_nutrition_vector.L3.total_value : 0}}g</text>
+          </view>
+          <view class="nutrition-item">
+            <text class="nutrition-label">奶豆坚果</text>
+            <text class="nutrition-value">{{parsedResult.pagoda_nutrition_vector.L4 && parsedResult.pagoda_nutrition_vector.L4.total_value ? parsedResult.pagoda_nutrition_vector.L4.total_value : 0}}g</text>
+          </view>
+          <view class="nutrition-item oil-salt-item">
+            <text class="nutrition-label">油</text>
+            <text class="nutrition-value">{{parsedResult.pagoda_nutrition_vector.L5 && parsedResult.pagoda_nutrition_vector.L5.oil ? parsedResult.pagoda_nutrition_vector.L5.oil : 0}}g</text>
+          </view>
+          <view class="nutrition-item oil-salt-item">
+            <text class="nutrition-label">盐</text>
+            <text class="nutrition-value">{{parsedResult.pagoda_nutrition_vector.L5 && parsedResult.pagoda_nutrition_vector.L5.salt ? parsedResult.pagoda_nutrition_vector.L5.salt : 0}}g</text>
+            <view wx:if="{{parsedResult.pagoda_nutrition_vector.L5 && parsedResult.pagoda_nutrition_vector.L5.salt && parsedResult.pagoda_nutrition_vector.L5.salt > 5}}" class="salt-warning">
+              <text class="warning-icon">⚠️</text>
+              <text class="warning-text">盐摄入量超标</text>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{selectedCategoryDetails}}" class="category-details">
+          <text class="category-details-title">{{selectedCategory}}详情</text>
+          <text class="category-details-text">{{selectedCategoryDetails}}</text>
+        </view>
+      </view>
     </view>
   </view>
 
