@@ -19,10 +19,31 @@ Page({
       title: '图像分析'
     })
 
+    if (!app.globalData.privacyAgreed) {
+      wx.showModal({
+        title: '提示',
+        content: '请先阅读并同意隐私协议',
+        showCancel: false,
+        success: () => {
+          wx.switchTab({
+            url: '/pages/index/index'
+          })
+        }
+      })
+      return
+    }
+
     this.checkLoginStatus()
   },
 
   onShow() {
+    if (!app.globalData.privacyAgreed) {
+      wx.switchTab({
+        url: '/pages/index/index'
+      })
+      return
+    }
+
     this.checkLoginStatus()
 
     this.setData({

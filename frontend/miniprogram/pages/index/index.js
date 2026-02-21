@@ -3,19 +3,40 @@ const app = getApp()
 Page({
   data: {
     nickName: '',
-    isLoggedIn: false
+    isLoggedIn: false,
+    privacyAgreed: false
   },
 
   onLoad() {
     wx.setNavigationBarTitle({
       title: '首页'
     })
-
-    this.checkLoginStatus()
   },
 
   onShow() {
+    if (this.data.privacyAgreed) {
+      this.checkLoginStatus()
+    }
+  },
+
+  onPrivacyAgree() {
+    console.log("用户同意隐私授权")
+    app.globalData.privacyAgreed = true
+    this.setData({
+      privacyAgreed: true
+    })
     this.checkLoginStatus()
+  },
+
+  onPrivacyDisagree() {
+    console.log("用户拒绝隐私授权")
+    wx.showModal({
+      title: '提示',
+      content: '您需要同意隐私协议才能使用本应用',
+      showCancel: false,
+      success: () => {
+      }
+    })
   },
 
   checkLoginStatus() {
@@ -31,15 +52,13 @@ Page({
   },
 
   handleLogin() {
-    const that = this
-    
     wx.showModal({
       title: '登录提示',
       content: '需要获取您的昵称用于标识分析记录',
       success: modalRes => {
         if (modalRes.confirm) {
-          app.doLogin((userInfo) => {
-            that.checkLoginStatus()
+          wx.navigateTo({
+            url: '/pages/profile/profile'
           })
         }
       }

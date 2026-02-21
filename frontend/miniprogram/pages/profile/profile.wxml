@@ -1,0 +1,33 @@
+<view class="container">
+  <view class="header">
+    <text class="title">完善个人信息</text>
+    <text class="subtitle">设置您的头像和昵称</text>
+  </view>
+
+  <form bindsubmit="onSubmit">
+    <view class="form-item">
+      <text class="label">头像</text>
+      <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+        <image class="avatar" src="{{avatarUrl}}" mode="aspectFill"></image>
+      </button>
+    </view>
+
+    <view class="form-item">
+      <text class="label">昵称</text>
+      <input 
+        type="nickname" 
+        class="nickname-input" 
+        placeholder="请输入昵称"
+        value="{{nickName}}"
+        bindinput="onNickNameInput"
+        name="nickname"
+      />
+    </view>
+
+    <view class="tip">
+      <text class="tip-text">💡 点击输入框时，键盘上方会显示您的微信昵称，可快速填写</text>
+    </view>
+
+    <button class="btn-submit" form-type="submit">确认</button>
+  </form>
+</view>

@@ -1,7 +1,8 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/analyze/analyze"
+    "pages/analyze/analyze",
+    "pages/profile/profile"
   ],
   "window": {
     "backgroundTextStyle": "light",

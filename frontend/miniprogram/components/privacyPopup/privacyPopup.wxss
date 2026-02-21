@@ -1,0 +1,64 @@
+.weui-half-screen-dialog {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border-radius: 12px 12px 0 0;
+  z-index: 5000;
+  padding: 32rpx;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.weui-half-screen-dialog__hd {
+  text-align: center;
+  margin-bottom: 24rpx;
+}
+
+.weui-half-screen-dialog__title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.weui-half-screen-dialog__bd {
+  padding: 0 16rpx;
+  margin-bottom: 32rpx;
+}
+
+.weui-half-screen-dialog__tips {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 16rpx;
+}
+
+.weui-half-screen-dialog__ft {
+  padding: 0 16rpx;
+}
+
+.weui-half-screen-dialog__btn-area {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.weui-btn {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 8rpx;
+  font-size: 32rpx;
+  border: none;
+  outline: none;
+}
+
+.weui-btn:first-child {
+  background-color: #f2f2f2;
+  color: #666;
+}
+
+.weui-btn:last-child {
+  background-color: #07c160;
+  color: #fff;
+}

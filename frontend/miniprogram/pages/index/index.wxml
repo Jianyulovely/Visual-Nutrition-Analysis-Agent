@@ -1,44 +1,63 @@
-<view class="container">
-  <view class="header">
-    <view class="welcome">
-      <text class="welcome-text">欢迎{{nickName ? nickName : ''}}使用</text>
-      <text class="app-name">视觉分析助手</text>
+<privacy-popup wx:if="{{!privacyAgreed}}" bind:agree="onPrivacyAgree" bind:disagree="onPrivacyDisagree"></privacy-popup>
+
+<view wx:if="{{privacyAgreed}}" class="container">
+  <view class="header-banner">
+    <view class="greeting">你好，{{nickName ? nickName : '朋友'}}，今天想分析哪道美食？</view>
+    <view class="main-title">智能营养分析助手</view>
+    <view class="sub-title">智能体解析，量化每一餐</view>
+  </view>
+
+  <view class="analysis-card" bindtap="goToAnalyze">
+    <view class="analysis-left">
+      <view class="analysis-icon-wrapper">
+        <text class="analysis-icon">📷</text>
+      </view>
+      <view class="analysis-content">
+        <view class="analysis-title">餐食图片分析</view>
+        <view class="analysis-desc">上传照片，AI 智能深度拆解营养成分</view>
+      </view>
     </view>
-    <text class="subtitle">智能识别，精准分析</text>
-  </view>
-
-  <view wx:if="{{!isLoggedIn}}" class="login-card">
-    <view class="login-tip">请先登录以使用完整功能</view>
-    <button class="btn-login" bindtap="handleLogin">微信登录</button>
-  </view>
-
-  <view wx:else class="feature-card">
-    <view class="feature-item" bindtap="goToAnalyze">
-      <view class="feature-icon">📷</view>
-      <view class="feature-title">图像分析</view>
-      <view class="feature-desc">上传图片，智能识别分析</view>
-    </view>
-  </view>
-
-  <view class="info-card">
-    <view class="info-title">功能介绍</view>
-    <view class="info-list">
-      <view class="info-item">
-        <text class="info-dot">•</text>
-        <text class="info-text">支持多种图像识别场景</text>
-      </view>
-      <view class="info-item">
-        <text class="info-dot">•</text>
-        <text class="info-text">快速准确的分析结果</text>
-      </view>
-      <view class="info-item">
-        <text class="info-dot">•</text>
-        <text class="info-text">简洁易用的操作界面</text>
-      </view>
+    <view class="analysis-right">
+      <text class="brain-icon">🧠</text>
     </view>
   </view>
 
-  <view wx:if="{{isLoggedIn}}" class="action-card">
-    <button class="btn-primary" bindtap="goToAnalyze">开始分析</button>
+  <view class="features-section">
+    <view class="section-title">核心功能</view>
+    <view class="features-list">
+      <view class="feature-item">
+        <view class="feature-icon-wrapper bg-blue">
+          <text class="feature-emoji">🤖</text>
+        </view>
+        <view class="feature-body">
+          <view class="feature-title">Agent 深度推理</view>
+          <view class="feature-desc">推断食材、烹饪方式与隐形配料</view>
+        </view>
+      </view>
+
+      <view class="feature-item">
+        <view class="feature-icon-wrapper bg-orange">
+          <text class="feature-emoji">📊</text>
+        </view>
+        <view class="feature-body">
+          <view class="feature-title">膳食宝塔可视化</view>
+          <view class="feature-desc">生成营养结构饼图，可视化五大营养素</view>
+        </view>
+      </view>
+
+      <view class="feature-item">
+        <view class="feature-icon-wrapper bg-red">
+          <text class="feature-emoji">❤️</text>
+        </view>
+        <view class="feature-body">
+          <view class="feature-title">健康预警建议</view>
+          <view class="feature-desc">识别高油高盐风险，发出高油盐警告</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="action-section">
+    <button class="btn-start" bindtap="goToAnalyze">开始分析</button>
   </view>
 </view>
