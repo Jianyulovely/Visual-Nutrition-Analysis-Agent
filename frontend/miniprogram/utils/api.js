@@ -39,6 +39,7 @@ function uploadImage(filePath, formData = {}) {
       url: app.globalData.baseUrl + '/analyze',
       filePath: filePath,
       name: 'image',
+      timeout: 60000, 
       formData: formData,
       success: (res) => {
         if (res.statusCode === 200) {

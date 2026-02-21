@@ -3,7 +3,6 @@ import shutil
 import os
 import uuid
 from app.agents.main_agent import VisionAnalysisAgent
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 agent = VisionAnalysisAgent()
@@ -11,15 +10,6 @@ agent = VisionAnalysisAgent()
 # 确保上传目录存在
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-# 配置 CORS 中间件
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],             # 允许所有来源（包括你的小程序域名或本地调试）
-    allow_credentials=True,
-    allow_methods=["*"],             # 允许所有请求方法 (POST, GET 等)
-    allow_headers=["*"],             # 允许所有请求头
-)
 
 @app.post("/analyze")
 async def analyze_nutrition(username: str = Form(...), image: UploadFile = File(...)):

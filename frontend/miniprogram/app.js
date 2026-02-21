@@ -1,7 +1,7 @@
 App({
   globalData: {
     userInfo: null,
-    baseUrl: 'http://localhost:8000'
+    baseUrl: 'https://706e6893.r16.vip.cpolar.cn'
   },
 
   // 小程序启动时触发
