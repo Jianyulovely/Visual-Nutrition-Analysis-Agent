@@ -1,7 +1,9 @@
 const { chooseImage, uploadImage } = require('../../utils/api.js')
+const app = getApp()
 
 Page({
   data: {
+    isLoggedIn: false,
     imagePath: '',
     username: '',
     analyzing: false,
@@ -16,9 +18,13 @@ Page({
     wx.setNavigationBarTitle({
       title: '图像分析'
     })
+
+    this.checkLoginStatus()
   },
 
   onShow() {
+    this.checkLoginStatus()
+
     this.setData({
       analyzing: false
     })
@@ -28,17 +34,102 @@ Page({
     }
   },
 
-  chooseImage() {
-    chooseImage(1).then(res => {
-      this.setData({
-        imagePath: res[0],
-        result: '',
-        parsedResult: null,
-        pieChartData: null
-      })
-    }).catch(err => {
-      console.error('选择图片失败', err)
+  checkLoginStatus() {
+    const nickName = app.globalData.nickName
+    const isLoggedIn = !!nickName && nickName !== '匿名用户'
+
+    this.setData({
+      isLoggedIn: isLoggedIn,
+      username: nickName || ''
     })
+
+    console.log('分析页登录状态:', isLoggedIn, '昵称:', nickName)
+  },
+
+  goToIndex() {
+    wx.switchTab({
+      url: '/pages/index/index'
+    })
+  },
+
+  showImagePicker() {
+    const that = this
+    wx.showActionSheet({
+      itemList: ['从相册选择', '拍照'],
+      success: res => {
+        if (res.tapIndex === 0) {
+          that.selectFromAlbum()
+        } else {
+          that.takePhoto()
+        }
+      }
+    })
+  },
+
+  selectFromAlbum() {
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album'],
+      success: res => {
+        this.setData({
+          imagePath: res.tempFilePaths[0],
+          result: '',
+          parsedResult: null,
+          pieChartData: null
+        })
+      },
+      fail: err => {
+        console.error('从相册选择图片失败', err)
+      }
+    })
+  },
+
+  takePhoto() {
+    const that = this
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['camera'],
+      success: res => {
+        const tempPath = res.tempFilePaths[0]
+        
+        that.setData({
+          imagePath: tempPath,
+          result: '',
+          parsedResult: null,
+          pieChartData: null
+        })
+
+        wx.saveImageToPhotosAlbum({
+          filePath: tempPath,
+          success: () => {
+            wx.showToast({
+              title: '照片已保存到相册',
+              icon: 'success',
+              duration: 1500
+            })
+          },
+          fail: err => {
+            console.error('保存到相册失败:', err)
+            if (err.errMsg && err.errMsg.includes('auth')) {
+              wx.showModal({
+                title: '需要相册权限',
+                content: '请在设置中开启"添加到相册"权限',
+                showCancel: false
+              })
+            }
+          }
+        })
+      },
+      fail: err => {
+        console.error('拍照失败', err)
+      }
+    })
+  },
+
+  chooseImage() {
+    this.showImagePicker()
   },
 
   onUsernameInput(e) {

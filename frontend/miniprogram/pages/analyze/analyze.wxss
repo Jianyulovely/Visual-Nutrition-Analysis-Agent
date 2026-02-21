@@ -391,3 +391,41 @@
   font-size: 28rpx;
   color: #999;
 }
+
+.login-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 40rpx;
+}
+
+.prompt-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+
+.prompt-text {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.prompt-hint {
+  font-size: 28rpx;
+  color: #999;
+  margin-bottom: 60rpx;
+}
+
+.btn-go-login {
+  width: 300rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  background: linear-gradient(135deg, #07c160 0%, #06ae56 100%);
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: bold;
+  border-radius: 40rpx;
+  border: none;
+}

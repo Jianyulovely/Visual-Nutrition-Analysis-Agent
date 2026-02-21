@@ -1,13 +1,18 @@
 <view class="container">
   <view class="header">
     <view class="welcome">
-      <text class="welcome-text">欢迎使用</text>
+      <text class="welcome-text">欢迎{{nickName ? nickName : ''}}使用</text>
       <text class="app-name">视觉分析助手</text>
     </view>
     <text class="subtitle">智能识别，精准分析</text>
   </view>
 
-  <view class="feature-card">
+  <view wx:if="{{!isLoggedIn}}" class="login-card">
+    <view class="login-tip">请先登录以使用完整功能</view>
+    <button class="btn-login" bindtap="handleLogin">微信登录</button>
+  </view>
+
+  <view wx:else class="feature-card">
     <view class="feature-item" bindtap="goToAnalyze">
       <view class="feature-icon">📷</view>
       <view class="feature-title">图像分析</view>
@@ -33,7 +38,7 @@
     </view>
   </view>
 
-  <view class="action-card">
+  <view wx:if="{{isLoggedIn}}" class="action-card">
     <button class="btn-primary" bindtap="goToAnalyze">开始分析</button>
   </view>
 </view>
