@@ -16,4 +16,4 @@ ENV PYTHONPATH=/app/backend
 
 EXPOSE 80
 
-CMD ["uvicorn", "backend.app.api.main:appp", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "backend.app.api.main:app", "--host", "0.0.0.0", "--port", "80"]
