@@ -5,6 +5,13 @@
     <view class="greeting">你好，{{nickName ? nickName : '朋友'}}，今天想分析哪道美食？</view>
     <view class="main-title">智能营养分析助手</view>
     <view class="sub-title">智能体解析，量化每一餐</view>
+    
+    <view wx:if="{{!isLoggedIn}}" class="login-entry" bindtap="handleLogin">
+      <text class="login-text">👤 点击登录</text>
+    </view>
+    <view wx:else class="user-info">
+      <text class="user-text">✓ 已登录：{{nickName}}</text>
+    </view>
   </view>
 
   <view class="analysis-card" bindtap="goToAnalyze">

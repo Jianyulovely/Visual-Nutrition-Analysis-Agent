@@ -32,6 +32,33 @@
   font-weight: 400;
 }
 
+.login-entry {
+  margin-top: 30rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 30rpx;
+  padding: 16rpx 32rpx;
+  display: inline-block;
+}
+
+.login-text {
+  font-size: 28rpx;
+  color: #fff;
+  font-weight: 500;
+}
+
+.user-info {
+  margin-top: 30rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 30rpx;
+  padding: 16rpx 32rpx;
+  display: inline-block;
+}
+
+.user-text {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.95);
+}
+
 /* 分析卡片：微调负边距与投影 */
 .analysis-card {
   background: #ffffff;

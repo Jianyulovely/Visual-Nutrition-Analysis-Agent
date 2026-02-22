@@ -19,11 +19,17 @@ App({
   checkLogin() {
     const savedUserInfo = wx.getStorageSync('userInfo')
     const savedNickName = wx.getStorageSync('nickName')
+    const savedPrivacyAgreed = wx.getStorageSync('privacyAgreed')
 
     if (savedUserInfo && savedNickName) {
       this.globalData.userInfo = savedUserInfo
       this.globalData.nickName = savedNickName
       console.log('已登录:', savedNickName)
+    }
+
+    if (savedPrivacyAgreed) {
+      this.globalData.privacyAgreed = true
+      console.log('已同意隐私协议')
     }
   },
 

@@ -14,7 +14,10 @@ Page({
   },
 
   onShow() {
-    if (this.data.privacyAgreed) {
+    if (app.globalData.privacyAgreed) {
+      this.setData({
+        privacyAgreed: true
+      })
       this.checkLoginStatus()
     }
   },
@@ -22,6 +25,7 @@ Page({
   onPrivacyAgree() {
     console.log("用户同意隐私授权")
     app.globalData.privacyAgreed = true
+    wx.setStorageSync('privacyAgreed', true)
     this.setData({
       privacyAgreed: true
     })
