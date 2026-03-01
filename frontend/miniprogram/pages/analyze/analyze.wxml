@@ -8,7 +8,7 @@
 
   <view wx:else>
     <view class="upload-section">
-      <view class="upload-area" bindtap="chooseImage">
+      <view class="upload-area" bindtap="showImagePicker">
         <image wx:if="{{imagePath}}" src="{{imagePath}}" class="preview-image" mode="aspectFit"></image>
         <view wx:else class="upload-placeholder">
           <text class="upload-icon">📷</text>
@@ -32,7 +32,7 @@
       <button 
         class="btn-analyze" 
         bindtap="analyzeImage"
-        disabled="{{!imagePath || analyzing}}"
+        disabled="{{!hasUploadedImage || analyzing}}"
       >
         {{analyzing ? '分析中...' : '开始分析'}}
       </button>

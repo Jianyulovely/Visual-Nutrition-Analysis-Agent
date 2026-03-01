@@ -7,6 +7,7 @@ Page({
     imagePath: '',
     username: '',
     analyzing: false,
+    hasUploadedImage: false,
     result: '',
     parsedResult: null,
     pieChartData: null,
@@ -93,58 +94,81 @@ Page({
       sizeType: ['compressed'],
       sourceType: ['album'],
       success: res => {
-        this.setData({
-          imagePath: res.tempFilePaths[0],
-          result: '',
-          parsedResult: null,
-          pieChartData: null
-        })
+        if (res.tempFilePaths && res.tempFilePaths.length > 0) {
+          this.setData({
+            imagePath: res.tempFilePaths[0],
+            result: '',
+            parsedResult: null,
+            pieChartData: null,
+            selectedCategory: '',
+            selectedCategoryDetails: '',
+            hasUploadedImage: true,
+            analyzing: false
+          })
+        }
       },
       fail: err => {
         console.error('从相册选择图片失败', err)
+        if (err.errMsg && !err.errMsg.includes('cancel')) {
+          wx.showToast({
+            title: '选择图片失败',
+            icon: 'none'
+          })
+        }
       }
     })
   },
 
   takePhoto() {
-    const that = this
     wx.chooseImage({
       count: 1,
       sizeType: ['compressed'],
       sourceType: ['camera'],
       success: res => {
-        const tempPath = res.tempFilePaths[0]
-        
-        that.setData({
-          imagePath: tempPath,
-          result: '',
-          parsedResult: null,
-          pieChartData: null
-        })
+        if (res.tempFilePaths && res.tempFilePaths.length > 0) {
+          const tempPath = res.tempFilePaths[0]
+          
+          this.setData({
+            imagePath: tempPath,
+            result: '',
+            parsedResult: null,
+            pieChartData: null,
+            selectedCategory: '',
+            selectedCategoryDetails: '',
+            hasUploadedImage: true,  
+            analyzing: false
+          })
 
-        wx.saveImageToPhotosAlbum({
-          filePath: tempPath,
-          success: () => {
-            wx.showToast({
-              title: '照片已保存到相册',
-              icon: 'success',
-              duration: 1500
-            })
-          },
-          fail: err => {
-            console.error('保存到相册失败:', err)
-            if (err.errMsg && err.errMsg.includes('auth')) {
-              wx.showModal({
-                title: '需要相册权限',
-                content: '请在设置中开启"添加到相册"权限',
-                showCancel: false
+          wx.saveImageToPhotosAlbum({
+            filePath: tempPath,
+            success: () => {
+              wx.showToast({
+                title: '照片已保存到相册',
+                icon: 'success',
+                duration: 1500
               })
+            },
+            fail: err => {
+              console.error('保存到相册失败:', err)
+              if (err.errMsg && err.errMsg.includes('auth')) {
+                wx.showModal({
+                  title: '需要相册权限',
+                  content: '请在设置中开启"添加到相册"权限',
+                  showCancel: false
+                })
+              }
             }
-          }
-        })
+          })
+        }
       },
       fail: err => {
         console.error('拍照失败', err)
+        if (err.errMsg && !err.errMsg.includes('cancel')) {
+          wx.showToast({
+            title: '拍照失败',
+            icon: 'none'
+          })
+        }
       }
     })
   },
@@ -421,6 +445,29 @@ Page({
       let parsedResult = null
       let pieChartData = null
       
+      if (res.status === 'invalid_image') {
+        this.setData({
+          analyzing: false,
+          imagePath: '',
+          hasUploadedImage: false,
+          result: '',
+          parsedResult: null,
+          pieChartData: null,
+          selectedCategory: '',
+          selectedCategoryDetails: ''
+        })
+        wx.showModal({
+          title: '图片无效',
+          content: res.message + '\n\n请重新选择图片',
+          showCancel: false,
+          confirmText: '重新选择',
+          success: () => {
+            this.showImagePicker() 
+          }
+        })
+        return
+      }
+      
       try {
         console.log('后端返回数据:', res)
         
@@ -454,6 +501,7 @@ Page({
       
       this.setData({
         analyzing: false,
+        hasUploadedImage: false,
         result: resultText,
         parsedResult: parsedResult,
         pieChartData: pieChartData,
