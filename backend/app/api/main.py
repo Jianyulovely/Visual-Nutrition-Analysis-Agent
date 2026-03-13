@@ -55,6 +55,8 @@ async def analyze_nutrition(username: str = Form(...), image: UploadFile = File(
             return ApiResponse(status="invalid_image", message=error_reason)
 
         report = full_state.get("analysis_results")
+        if report is None:
+            return ApiResponse(status="error", message="分析流程未返回结果，请重试")
         return ApiResponse(status="success", data=report.model_dump())
 
     except Exception as e:

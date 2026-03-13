@@ -286,7 +286,7 @@ Page({
 
       const canvas = res[0].node
       const ctx = canvas.getContext('2d')
-      const dpr = wx.getSystemInfoSync().pixelRatio
+      const dpr = wx.getWindowInfo().pixelRatio
       canvas.width = res[0].width * dpr
       canvas.height = res[0].height * dpr
       ctx.scale(dpr, dpr)
@@ -465,9 +465,20 @@ Page({
           confirmText: '重新选择',
           success: (buttonRes) => {
             if (buttonRes.confirm) {
-              this.showImagePicker() 
+              this.showImagePicker()
             }
           }
+        })
+        return
+      }
+
+      // 后端发生异常时，直接显示错误信息
+      if (res.status === 'error') {
+        this.setData({ analyzing: false })
+        wx.showModal({
+          title: '分析失败',
+          content: res.message || '服务器发生错误，请稍后重试',
+          showCancel: false
         })
         return
       }
@@ -476,8 +487,9 @@ Page({
         console.log('后端返回数据:', res)
         
         let dataToParse = res
-        
-        if (typeof dataToParse === 'object' && dataToParse.data !== undefined) {
+
+        // 用 'data' in 判断，避免 null !== undefined 的陷阱
+        if (typeof dataToParse === 'object' && dataToParse !== null && 'data' in dataToParse) {
           dataToParse = dataToParse.data
         }
         
