@@ -4,11 +4,30 @@ import json
 
 
 class UserDB:
+    # 用餐时段定义（小时，左闭右开）
+    MEAL_TIMES = {
+        "breakfast": (5, 10),
+        "lunch": (10, 15),
+        "dinner": (15, 23),
+    }
+
     def __init__(self, db_path="user_diet.db"):
         # 1. 建立数据库连接
         self.conn = sqlite3.connect(db_path)
         # 2. 初始化表结构
         self._create_tables()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    def close(self):
+        if self.conn:
+            self.conn.close()
+            self.conn = None
 
     def _create_tables(self):
         # 执行 SQL 语句初始化表...
@@ -316,13 +335,11 @@ class UserDB:
         
         # 2. 根据时间区间划分用餐记录
         from datetime import datetime, timedelta
-        
-        # 定义时间区间
-        breakfast_start = datetime.strptime("05:00", "%H:%M").time()
-        breakfast_end = datetime.strptime("10:00", "%H:%M").time()
-        lunch_start = datetime.strptime("10:00", "%H:%M").time()
-        lunch_end = datetime.strptime("15:00", "%H:%M").time()
-        
+
+        start_h, end_h = self.MEAL_TIMES.get(meal_time, (0, 0))
+        if start_h == 0 and end_h == 0:
+            return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
         # 分类用餐记录
         breakfast_menus = []
         lunch_menus = []
@@ -336,10 +353,10 @@ class UserDB:
             # 转换为东八区时间
             created_at = created_at + timedelta(hours=8)
             menu_time = created_at.time()
-            
-            if breakfast_start <= menu_time < breakfast_end:
+
+            if self.MEAL_TIMES["breakfast"][0] <= menu_time.hour < self.MEAL_TIMES["breakfast"][1]:
                 breakfast_menus.append(menu_id)
-            elif lunch_start <= menu_time < lunch_end:
+            elif self.MEAL_TIMES["lunch"][0] <= menu_time.hour < self.MEAL_TIMES["lunch"][1]:
                 lunch_menus.append(menu_id)
             else:
                 dinner_menus.append(menu_id)
@@ -352,8 +369,7 @@ class UserDB:
         elif meal_time == "dinner":
             target_menus = dinner_menus
         else:
-            return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        
+            return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]        
         if not target_menus:
             return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         

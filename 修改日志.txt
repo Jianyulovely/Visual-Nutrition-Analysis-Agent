@@ -1,0 +1,154 @@
+========================================================
+  Vision_Analysis_agent 修改日志
+  日期：2026-03-13
+========================================================
+
+────────────────────────────────────────────────────────
+backend/app/agent_utils/get_llm.py
+────────────────────────────────────────────────────────
+[fix #6]  LLM 单例模式
+  - 新增模块级全局变量 _llm_instance / _vision_llm_instance
+  - get_llm() / get_vision_llm() 改为懒加载单例，避免每次调用重复实例化
+
+[fix #12] 环境变量校验
+  - 移除 load_dotenv() 的 verbose=True（防止敏感信息泄露到日志）
+  - load_dotenv 后立即检查 DASHSCOPE_API_KEY，缺失时抛出 ValueError 快速失败
+
+
+────────────────────────────────────────────────────────
+backend/app/agents/vision_agent.py
+────────────────────────────────────────────────────────
+[fix #7]  返回类型标注修正
+  - analyze_image() 返回类型从 -> str 修正为 -> VisionResponse
+
+[fix #17] 清理 __main__ 测试代码
+  - 将硬编码的相对路径 "food_pic/..." 改为 "../../food_pic/..."
+
+
+────────────────────────────────────────────────────────
+backend/app/agents/analysis_agent.py
+────────────────────────────────────────────────────────
+[fix #3]  删除死代码 _save_node
+  - 移除从未加入 workflow 且依赖未初始化 self.db 的 _save_node 方法
+
+[fix #3]  清理无用导入
+  - 移除不再使用的 operator, Annotated, List（已由 models.schemas 提供）
+
+[fix #17] 清理 __main__ 测试代码
+  - 移除硬编码的绝对用户名 "yjy"，改为 "test_user"
+  - 将超长的硬编码视觉报告字符串精简为示例片段
+
+
+────────────────────────────────────────────────────────
+backend/app/agents/main_agent.py
+────────────────────────────────────────────────────────
+[fix #17] 清理 __main__ 测试代码
+  - 移除硬编码绝对路径 "/data3/yjy/..." 改为相对路径 "../../food_pic/..."
+  - 移除硬编码用户名 "yjy"，改为 "test_user"
+
+
+────────────────────────────────────────────────────────
+backend/models/schemas.py
+────────────────────────────────────────────────────────
+[fix #13] 新增统一 API 响应模型
+  - 新增 ApiResponse(BaseModel)，字段：status / message / data
+  - 供 api/main.py 统一使用，消除三种不同响应格式的不一致
+
+
+────────────────────────────────────────────────────────
+backend/app/api/main.py
+────────────────────────────────────────────────────────
+[fix #1]  修复 thread_id 硬编码
+  - 原：thread_id="user_session_001"（所有用户共享）
+  - 改：thread_id=f"{username}_{uuid.uuid4().hex[:8]}"（每次请求唯一）
+
+[fix #2]  上传文件处理后必须删除
+  - 将文件删除逻辑移入 finally 块，确保无论成功/异常都清理临时文件
+
+[fix #5]  文件上传安全校验
+  - 新增 MIME 类型白名单（jpeg/png/webp/gif），不在白名单内直接拒绝
+  - 新增文件大小限制（MAX_FILE_SIZE = 10MB）
+  - 使用 rsplit 安全解析扩展名，防止空扩展名崩溃
+
+[fix #8]  异步路由中的同步 IO 改造
+  - 原：shutil.copyfileobj(image.file, buffer)（同步阻塞事件循环）
+  - 改：content = await image.read()（异步读取上传内容）后再写入磁盘
+
+[fix #13] 统一 API 响应格式
+  - 所有返回值改为 ApiResponse 对象
+  - 成功/无效图片/异常三条路径统一使用 status + message + data 结构
+  - 移除 shutil 导入（不再使用）
+
+
+────────────────────────────────────────────────────────
+backend/app/agent_utils/database_utils/user_db.py
+────────────────────────────────────────────────────────
+[fix #9]  修复 sys.path 反模式
+  - 移除 sys.path.append(os.path.dirname(...)) 黑魔法
+  - 改为正规绝对导入：from app.agent_utils.get_embed import DashScopeEmbeddingAdapter
+  - 同步移除无用的 sys / os 导入
+
+
+────────────────────────────────────────────────────────
+backend/app/agent_utils/database_utils/canteen_db.py
+────────────────────────────────────────────────────────
+[fix #9]  修复 sys.path 反模式
+  - 同 user_db.py，改为 from app.agent_utils.get_embed import DashScopeEmbeddingAdapter
+  - 移除无用的 sys / os 导入
+
+[fix #16] 修复 L5 搜索逻辑错误
+  - 原：将字符串 "oil"/"salt" 与数字做 >= 比较（永远不成立）
+  - 改：min_value 为 "oil" 时检查 L5_oil > 0，为 "salt" 时检查 L5_salt > 0
+
+
+────────────────────────────────────────────────────────
+backend/app/agent_utils/database_utils/user_db_sql.py
+────────────────────────────────────────────────────────
+[fix #11] 数据库连接上下文管理器
+  - 新增 __enter__ / __exit__ / close() 方法
+  - 支持 with UserDB() as db: 语法，确保连接自动关闭
+
+[fix #15] 餐时常量化
+  - 新增类常量 MEAL_TIMES = {"breakfast": (5,10), "lunch": (10,15), "dinner": (15,23)}
+  - 移除 get_nutrition_c_vector 中四个硬编码的 datetime.strptime() 时间变量
+  - 统一使用 MEAL_TIMES 进行时间段判断，与 user_db.py（Chroma版）保持一致
+
+
+────────────────────────────────────────────────────────
+backend/app/agent_utils/database_utils/canteen_db_sql.py
+────────────────────────────────────────────────────────
+[fix #11] 数据库连接上下文管理器
+  - 新增 __enter__ / __exit__ / close() 方法
+  - 支持 with CanteenDB() as db: 语法，确保连接自动关闭
+
+
+────────────────────────────────────────────────────────
+backend/app/agent_utils/create_vectorstore.py（重命名）
+────────────────────────────────────────────────────────
+[fix #14] 文件名拼写修正
+  - creat_vectorstore.py → create_vectorstore.py
+  - 经确认该文件未被任何模块导入，无需更新引用
+
+
+========================================================
+  跳过项（用户指定不修改）
+========================================================
+[skip #4]  CORS 配置（allow_origins=* + allow_credentials=True）
+[skip #10] 两套数据库实现并存（Chroma 版与 SQLite 版）
+
+========================================================
+  修改文件汇总（共 10 个文件）
+========================================================
+ 1. backend/app/agent_utils/get_llm.py
+ 2. backend/app/agents/vision_agent.py
+ 3. backend/app/agents/analysis_agent.py
+ 4. backend/app/agents/main_agent.py
+ 5. backend/models/schemas.py
+ 6. backend/app/api/main.py
+ 7. backend/app/agent_utils/database_utils/user_db.py
+ 8. backend/app/agent_utils/database_utils/canteen_db.py
+ 9. backend/app/agent_utils/database_utils/user_db_sql.py
+10. backend/app/agent_utils/database_utils/canteen_db_sql.py
+11. backend/app/agent_utils/creat_vectorstore.py → create_vectorstore.py（重命名）
+
+========================================================

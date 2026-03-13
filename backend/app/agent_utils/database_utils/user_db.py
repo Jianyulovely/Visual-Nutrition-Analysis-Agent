@@ -2,13 +2,8 @@ import chromadb
 from datetime import datetime, timedelta
 import json
 import uuid
-import sys
-import os
 
-# 添加父目录到 sys.path，以便导入 get_embed
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
-from get_embed import DashScopeEmbeddingAdapter
+from app.agent_utils.get_embed import DashScopeEmbeddingAdapter
 
 """
 使用Chroma数据库实现

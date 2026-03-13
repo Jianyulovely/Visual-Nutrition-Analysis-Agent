@@ -1,13 +1,8 @@
 import chromadb
 import json
 import uuid
-import sys
-import os
 
-# 添加父目录到 sys.path，以便导入 get_embed
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
-from get_embed import DashScopeEmbeddingAdapter
+from app.agent_utils.get_embed import DashScopeEmbeddingAdapter
 
 
 class CanteenDB:
@@ -167,9 +162,9 @@ class CanteenDB:
             if nutrition_level == "L5":
                 # L5 特殊处理：搜索油量或盐量
                 if isinstance(min_value, str):
-                    if min_value == "oil" and meta.get("L5_oil", 0) >= min_value:
+                    if min_value == "oil" and meta.get("L5_oil", 0) > 0:
                         matched_dishes.append(meta)
-                    elif min_value == "salt" and meta.get("L5_salt", 0) >= min_value:
+                    elif min_value == "salt" and meta.get("L5_salt", 0) > 0:
                         matched_dishes.append(meta)
                 elif isinstance(min_value, (int, float)):
                     if meta.get("L5_oil", 0) >= min_value or meta.get("L5_salt", 0) >= min_value:

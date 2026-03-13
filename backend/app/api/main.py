@@ -1,9 +1,11 @@
-from fastapi import FastAPI, UploadFile, File, Form
-import shutil
 import os
 import uuid
-from app.agents.main_agent import VisionAnalysisAgent
+
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.agents.main_agent import VisionAnalysisAgent
+from models.schemas import ApiResponse
 
 app = FastAPI()
 agent = VisionAnalysisAgent()
@@ -12,39 +14,52 @@ agent = VisionAnalysisAgent()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# 允许的图片 MIME 类型与最大文件大小
+ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+
 # 配置 CORS 中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],             # 允许所有来源（包括你的小程序域名或本地调试）
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],             # 允许所有请求方法 (POST, GET 等)
-    allow_headers=["*"],             # 允许所有请求头
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-@app.post("/analyze")
-async def analyze_nutrition(username: str = Form(...), image: UploadFile = File(...)):
-    # 1. 保存上传的文件到临时路径
-    file_ext = image.filename.split(".")[-1]
-    file_path = os.path.join(UPLOAD_DIR, f"{uuid.uuid4()}.{file_ext}")
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(image.file, buffer)
-    
-    # 2. 调用你的 VisionAnalysisAgent
-    try:
-        # thread_id 可用于多轮对话状态保持，此处先给一个随机值
-        # 这里run返回是一个AgentState
-        full_state = agent.run(username=username, image_path=file_path, thread_id="user_session_001")
-        
-        # 检查图片是否有效
-        error_reason = full_state.error_reason
-        if error_reason:
-            return {
-                "status": "invalid_image",
-                "message": error_reason
-            }
 
-        report = full_state.analysis_results
-        return {"status": "success", "data": report.model_dump()}
+@app.post("/analyze", response_model=ApiResponse)
+async def analyze_nutrition(username: str = Form(...), image: UploadFile = File(...)):
+    # 1. 安全校验：MIME 类型
+    if image.content_type not in ALLOWED_MIME:
+        return ApiResponse(status="error", message=f"不支持的文件类型: {image.content_type}")
+
+    # 2. 读取文件内容（异步）并校验大小
+    content = await image.read()
+    if len(content) > MAX_FILE_SIZE:
+        return ApiResponse(status="error", message="文件过大，请上传小于 10MB 的图片")
+
+    # 3. 保存到临时路径
+    file_ext = image.filename.rsplit(".", 1)[-1] if "." in image.filename else "jpg"
+    file_path = os.path.join(UPLOAD_DIR, f"{uuid.uuid4()}.{file_ext}")
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    # 4. 调用 Agent，无论成功失败都删除临时文件
+    try:
+        thread_id = f"{username}_{uuid.uuid4().hex[:8]}"
+        full_state = agent.run(username=username, image_path=file_path, thread_id=thread_id)
+
+        error_reason = full_state.get("error_reason")
+        if error_reason:
+            return ApiResponse(status="invalid_image", message=error_reason)
+
+        report = full_state.get("analysis_results")
+        return ApiResponse(status="success", data=report.model_dump())
+
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return ApiResponse(status="error", message=str(e))
+
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)

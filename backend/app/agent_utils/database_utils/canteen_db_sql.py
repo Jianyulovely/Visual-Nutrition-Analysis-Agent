@@ -9,6 +9,18 @@ class CanteenDB:
         # 2. 初始化表结构
         self._create_tables()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    def close(self):
+        if self.conn:
+            self.conn.close()
+            self.conn = None
+
     def _create_tables(self):
         # 执行 SQL 语句初始化表...
         sql_script = """

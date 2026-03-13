@@ -39,7 +39,7 @@ class VisionAnalysisAgent:
         builder.add_node("analysis", lambda state: {
             "analysis_results": self.analysis_agent.analyze(
                 state.username, state.vision_report.report
-            ).final_response
+            )["final_response"]
         })
 
         builder.add_edge(START, "vision")
@@ -66,5 +66,5 @@ class VisionAnalysisAgent:
 
 if __name__ == "__main__":
     agent = VisionAnalysisAgent()
-    agent_response = agent.run(username="yjy", image_path="/data3/yjy/envs/VAA/Vision_Analysis_agent/food_pic/饺子.jpg")
+    agent_response = agent.run(username="test_user", image_path="../../food_pic/饺子.jpg")
     print(agent_response)

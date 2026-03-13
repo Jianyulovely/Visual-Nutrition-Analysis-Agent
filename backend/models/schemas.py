@@ -66,3 +66,10 @@ class AnalysisState(BaseModel):
     retry_count: int = 0
     errors: List[str] = []
     save_status: bool = False
+
+
+# ── 6. 统一 API 响应格式 ─────────────────────────────────────────
+class ApiResponse(BaseModel):
+    status: str
+    message: str = ""
+    data: Optional[dict] = None
