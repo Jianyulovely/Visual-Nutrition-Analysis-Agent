@@ -2,14 +2,7 @@ from app.agent_utils.get_llm import get_vision_llm
 from app.agent_utils.process_pic import process_pic
 from app.agent_utils.agent_prompt import VISION_NODE_PROMPT
 
-from pydantic import BaseModel, Field
-
-
-# 定义结构化输出模型
-class VisionResponse(BaseModel):
-    is_valid: bool = Field(description="图片是否清晰且包含食物")
-    reason: str = Field(description="如果不合法，说明原因（如：图片模糊、非食物、无图片）")
-    report: str = Field(description="识别到的食材详细报告，若不合法则为空")
+from models.schemas import VisionResponse
 
 
 class VisionAgent:

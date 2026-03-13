@@ -64,25 +64,9 @@ function uploadImage(filePath, formData = {}) {
   })
 }
 
-// 封装调用摄像头或者相册逻辑
-function chooseImage(count = 1) {
-  return new Promise((resolve, reject) => {
-    wx.chooseImage({
-      count: count,
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: (res) => {
-        resolve(res.tempFilePaths)
-      },
-      fail: (err) => {
-        reject(err)
-      }
-    })
-  })
-}
 
+// 导出函数
 module.exports = {
   request,
   uploadImage,
-  chooseImage
 }

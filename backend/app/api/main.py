@@ -37,14 +37,14 @@ async def analyze_nutrition(username: str = Form(...), image: UploadFile = File(
         full_state = agent.run(username=username, image_path=file_path, thread_id="user_session_001")
         
         # 检查图片是否有效
-        error_reason = full_state.get("error_reason")
+        error_reason = full_state.error_reason
         if error_reason:
             return {
                 "status": "invalid_image",
                 "message": error_reason
             }
-        
-        result = full_state.get("analysis_results", {}).get("final_response")
-        return {"status": "success", "data": result}
+
+        report = full_state.analysis_results
+        return {"status": "success", "data": report.model_dump()}
     except Exception as e:
         return {"status": "error", "message": str(e)}

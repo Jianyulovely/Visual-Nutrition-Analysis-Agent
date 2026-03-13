@@ -1,4 +1,4 @@
-const { chooseImage, uploadImage } = require('../../utils/api.js')
+const { uploadImage } = require('../../utils/api.js')
 const app = getApp()
 
 Page({
@@ -445,6 +445,7 @@ Page({
       let parsedResult = null
       let pieChartData = null
       
+      // 当图片为无效图时，清空数据并提示用户重新选择
       if (res.status === 'invalid_image') {
         this.setData({
           analyzing: false,
@@ -459,10 +460,13 @@ Page({
         wx.showModal({
           title: '图片无效',
           content: res.message + '\n\n请重新选择图片',
-          showCancel: false,
+          showCancel: true,
+          cancelText: '取消',
           confirmText: '重新选择',
-          success: () => {
-            this.showImagePicker() 
+          success: (buttonRes) => {
+            if (buttonRes.confirm) {
+              this.showImagePicker() 
+            }
           }
         })
         return
